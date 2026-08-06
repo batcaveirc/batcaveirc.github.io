@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The BatCave — Live Chat</title>
+<meta name="description" content="Step into The BatCave — live IRC chat on HybridIRC. Pick a name and join the coven.">
+<!-- Gothic display font (falls back to Georgia if it can't load) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#07060d; --bg1:#140a26; --bg2:#1e0f38;
+    --violet:#a78bfa; --violet-deep:#7c3aed; --crimson:#b91c1c; --crimson-glow:#ef4444;
+    --ink:#e8e4f5; --muted:#9b93b8; --line:rgba(167,139,250,.22);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh; color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(124,58,237,.28), transparent 60%),
+      radial-gradient(900px 500px at 85% 10%, rgba(185,28,28,.14), transparent 55%),
+      linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 55%, var(--bg0) 100%);
+    background-attachment:fixed;
+    overflow-x:hidden;
+  }
+  /* drifting bats */
+  .bat{position:fixed;top:-40px;font-size:26px;opacity:.10;pointer-events:none;
+       animation:fall linear infinite;filter:drop-shadow(0 0 6px rgba(0,0,0,.6));z-index:0}
+  @keyframes fall{0%{transform:translateY(-10vh) rotate(-8deg)}100%{transform:translateY(115vh) rotate(8deg)}}
+
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+
+  header{text-align:center;margin-bottom:26px}
+  .crest{font-size:52px;line-height:1;filter:drop-shadow(0 0 18px rgba(167,139,250,.55))}
+  h1{font-family:'Cinzel',Georgia,serif;font-weight:900;letter-spacing:.14em;
+     font-size:clamp(2.1rem,6vw,3.6rem);margin:.28em 0 .12em;
+     background:linear-gradient(180deg,#fff, var(--violet) 65%, var(--violet-deep));
+     -webkit-background-clip:text;background-clip:text;color:transparent;
+     text-shadow:0 0 40px rgba(124,58,237,.35)}
+  .tagline{color:var(--muted);font-size:clamp(.9rem,2.4vw,1.08rem);letter-spacing:.03em;margin:0 auto;max-width:620px}
+  .tagline .accent{color:var(--crimson-glow);font-weight:600}
+
+  /* chat frame */
+  .stage{position:relative;border-radius:18px;padding:0;
+    background:linear-gradient(160deg, rgba(30,15,56,.9), rgba(10,8,18,.92));
+    border:1px solid var(--line);
+    box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 24px 70px rgba(0,0,0,.6),
+               0 0 60px rgba(124,58,237,.22);}
+  .stage-bar{display:flex;align-items:center;gap:10px;padding:11px 18px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(90deg, rgba(124,58,237,.16), transparent);}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--crimson);box-shadow:0 0 10px var(--crimson-glow);
+       animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .stage-bar .room{font-family:'Cinzel',Georgia,serif;font-weight:700;letter-spacing:.08em;color:#fff}
+  .stage-bar .live{margin-left:auto;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
+  .frame-holder{position:relative;overflow:hidden;border-radius:0 0 18px 18px}
+  iframe{display:block;width:100%;height:70vh;min-height:520px;border:0;background:#0b0b14}
+
+  /* rules / welcome cards */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
+  .card{background:linear-gradient(160deg, rgba(30,15,56,.66), rgba(10,8,18,.66));
+    border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card h3{font-family:'Cinzel',Georgia,serif;letter-spacing:.06em;margin:0 0 10px;color:#fff;font-size:1.02rem;
+    display:flex;align-items:center;gap:8px}
+  .card p,.card li{color:var(--muted);font-size:.9rem;line-height:1.55}
+  .card ul{margin:0;padding-left:18px}
+  .card li{margin:.32em 0}
+  .card li b{color:var(--ink);font-weight:600}
+
+  footer{text-align:center;margin-top:34px;color:var(--muted);font-size:.82rem}
+  footer a{color:var(--violet);text-decoration:none;border-bottom:1px dotted var(--line)}
+  footer a:hover{color:#fff}
+  .fullscreen-link{display:inline-block;margin-top:14px;padding:9px 18px;border-radius:10px;
+    background:linear-gradient(180deg,var(--violet-deep),#5b21b6);color:#fff;font-weight:600;
+    text-decoration:none;letter-spacing:.03em;box-shadow:0 8px 24px rgba(124,58,237,.35);border:0}
+  .fullscreen-link:hover{filter:brightness(1.12)}
+</style>
+</head>
+<body>
+  <!-- drifting bats (decorative) -->
+  <div class="bat" style="left:8%;animation-duration:19s;animation-delay:-2s">🦇</div>
+  <div class="bat" style="left:24%;animation-duration:26s;animation-delay:-9s;font-size:20px">🦇</div>
+  <div class="bat" style="left:52%;animation-duration:22s;animation-delay:-5s">🦇</div>
+  <div class="bat" style="left:71%;animation-duration:30s;animation-delay:-14s;font-size:32px">🦇</div>
+  <div class="bat" style="left:88%;animation-duration:24s;animation-delay:-7s;font-size:18px">🦇</div>
+
+  <div class="wrap">
+    <header>
+      <div class="crest">🦇</div>
+      <!-- EDIT ME: your room name -->
+      <h1>The&nbsp;BatCave</h1>
+      <!-- EDIT ME: your tagline -->
+      <p class="tagline">Where the night owls gather. Pick a name, drop in, and <span class="accent">join the coven</span> — no account, no download.</p>
+    </header>
+
+    <!-- ── LIVE CHAT EMBED (HybridIRC / KiwiIRC) ─────────────────────────────
+         This is the official HybridIRC embed. To point it at a different room,
+         change  #batcave  in the src below to your channel name. -->
+    <div class="stage">
+      <div class="stage-bar">
+        <span class="dot"></span>
+        <span class="room">#batcave</span>
+        <span class="live">● live now</span>
+      </div>
+      <div class="frame-holder">
+        <iframe src="https://kiwiirc.hybridirc.com/#batcave"
+                title="The BatCave live chat"
+                loading="lazy"
+                referrerpolicy="no-referrer"></iframe>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>🌙 First time here?</h3>
+        <p>Type any nickname in the <b>Welcome</b> box above and hit <b>Start</b>. That's it — you're in the room. Returning regulars can register their name so no one else can take it.</p>
+      </div>
+      <!-- EDIT ME: house rules -->
+      <div class="card">
+        <h3>⚔️ House rules</h3>
+        <ul>
+          <li>Be decent — <b>no spam, no hate, no harassment.</b></li>
+          <li>English &amp; Hinglish both welcome.</li>
+          <li>Ops &amp; <b>Vampire</b> keep the peace; their word is final.</li>
+          <li>Have fun — trivia, music &amp; games run here.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🦇 Who's Vampire?</h3>
+        <p>Our resident shape-shifter — a witty, multilingual bot that chats, runs games, and moderates the room around the clock. Say hi: <b>@Vampire hey</b>.</p>
+      </div>
+    </div>
+
+    <footer>
+      <a class="fullscreen-link" href="https://kiwiirc.hybridirc.com/#batcave" target="_blank" rel="noopener">Open chat full-screen ↗</a>
+      <p>The BatCave · live on <a href="https://www.hybridirc.com/" target="_blank" rel="noopener">HybridIRC</a></p>
+    </footer>
+  </div>
+</body>
+</html>
