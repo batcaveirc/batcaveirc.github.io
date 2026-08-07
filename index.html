@@ -80,23 +80,42 @@
     text-decoration:none;letter-spacing:.03em;box-shadow:0 8px 24px rgba(124,58,237,.35);border:0;cursor:pointer;font-size:.95rem;font-family:inherit}
   .fullscreen-link:hover{filter:brightness(1.12)}
   /* rooms hint + radio dock */
-  .dock{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+  .dock{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px}
   .dock-item{background:linear-gradient(160deg, rgba(30,15,56,.66), rgba(10,8,18,.66));
     border:1px solid var(--line);border-radius:14px;padding:16px 18px}
   .rooms-hint{color:var(--muted);font-size:.86rem;line-height:1.6}
   .rooms-hint b{color:var(--ink)}
   .rooms-hint code{background:rgba(167,139,250,.16);color:var(--violet);padding:1px 6px;border-radius:5px;font-size:.82em}
-  .radio-box{display:flex;flex-direction:column;gap:9px;align-items:flex-start}
-  .radio-toggle{background:linear-gradient(180deg,var(--violet-deep),#5b21b6);color:#fff;border:0;cursor:pointer;
-    border-radius:10px;padding:9px 16px;font-weight:600;font-size:.9rem;font-family:inherit;letter-spacing:.02em;
-    box-shadow:0 8px 22px rgba(124,58,237,.32)}
-  .radio-toggle:hover{filter:brightness(1.12)}
-  .radio-toggle.on{background:linear-gradient(180deg,#b91c1c,#7f1d1d);box-shadow:0 8px 22px rgba(185,28,28,.35)}
-  .radio-note{color:var(--muted);font-size:.78rem}
-  .radio-note b{color:var(--violet)}
-  #radioPlayer{width:100%}
-  #radioPlayer iframe{width:100%;height:200px;min-height:0;border:0;border-radius:10px;margin-top:2px}
-  @media(max-width:640px){.dock{grid-template-columns:1fr}}
+  /* synced jukebox */
+  .jb-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .jb-title{font-family:'Cinzel',Georgia,serif;letter-spacing:.04em;color:#fff;font-size:1rem;font-weight:700}
+  .jb-sub{display:block;font-family:'Inter',sans-serif;font-weight:400;letter-spacing:0;color:var(--muted);font-size:.72rem;margin-top:2px}
+  .jb-join{margin-left:auto;background:linear-gradient(180deg,var(--violet-deep),#5b21b6);color:#fff;border:0;cursor:pointer;
+    border-radius:10px;padding:8px 16px;font-weight:600;font-size:.88rem;font-family:inherit;box-shadow:0 8px 22px rgba(124,58,237,.32)}
+  .jb-join:hover{filter:brightness(1.12)}
+  .jb-join.on{background:linear-gradient(180deg,#b91c1c,#7f1d1d);box-shadow:0 8px 22px rgba(185,28,28,.35)}
+  .jb-now{margin-top:12px;color:var(--ink);font-size:.9rem;background:rgba(167,139,250,.08);
+    border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .jb-now b{color:var(--violet)}
+  .jb-player-wrap{display:none;margin-top:12px}
+  .jb-player-wrap iframe,#jbPlayer{width:100%;height:220px;border:0;border-radius:10px}
+  .jb-add{display:none;margin-top:12px;gap:8px}
+  .jb-add input{flex:1;min-width:0;background:#0d0d1a;border:1px solid var(--line);color:var(--ink);
+    border-radius:9px;padding:9px 12px;font-size:.85rem;font-family:inherit}
+  .jb-add input::placeholder{color:#5b5470}
+  .jb-add button{background:rgba(167,139,250,.16);color:var(--violet);border:1px solid var(--line);
+    border-radius:9px;padding:9px 14px;cursor:pointer;font-weight:600;font-family:inherit;white-space:nowrap}
+  .jb-add button:hover{background:rgba(167,139,250,.3);color:#fff}
+  .jukebox.tuned .jb-player-wrap{display:block}
+  .jukebox.tuned .jb-add{display:flex}
+  .jb-msg{color:var(--violet);font-size:.76rem;margin-top:6px;min-height:0}
+  .jb-queue{margin-top:12px}
+  .jb-qhead{color:var(--violet);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+  .jb-qrow{display:flex;gap:10px;align-items:center;padding:5px 0;border-top:1px solid rgba(167,139,250,.1);font-size:.84rem}
+  .jb-qrow .jb-qt{color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .jb-qrow .jb-qby{color:var(--muted);font-size:.72rem;white-space:nowrap}
+  .jb-empty{color:var(--muted);font-size:.82rem;line-height:1.55}
+  .jb-empty b{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -139,10 +158,20 @@
       <div class="dock-item rooms-hint">
         <b>🚪 Rooms:</b> the <b>#batcave</b> lobby and the <b>main room</b> open as tabs right inside the chat — switch between them up top. Want a different channel? Click the <b>＋</b> in the chat or type <code>/list</code> to browse every room on the network.
       </div>
-      <div class="dock-item radio-box">
-        <button class="radio-toggle" id="radioBtn" onclick="toggleRadio()">📻 Turn on BatCave Radio</button>
-        <span class="radio-note">New Bollywood · non-stop · starts <b>OFF</b> — flip it on whenever you like</span>
-        <div id="radioPlayer"></div>
+      <div class="dock-item jukebox" id="jukeboxEl">
+        <div class="jb-head">
+          <div class="jb-title">📻 BatCave Radio<span class="jb-sub">One station · the whole room hears the same song · New Bollywood</span></div>
+          <button class="jb-join" id="jbJoin" onclick="jbToggle()">▶ Tune in</button>
+        </div>
+        <div class="jb-now" id="jbNow">Radio's off for you — tune in to hear what the room's playing right now.</div>
+        <div class="jb-player-wrap" id="jbPlayerWrap"><div id="jbPlayer"></div></div>
+        <div class="jb-add" id="jbAdd">
+          <input id="jbInput" maxlength="200" placeholder="Paste a YouTube link to queue a song for everyone…"
+                 onkeydown="if(event.key==='Enter')jbAdd()">
+          <button onclick="jbAdd()">＋ Queue</button>
+        </div>
+        <div class="jb-msg" id="jbMsg"></div>
+        <div class="jb-queue" id="jbQueue"></div>
       </div>
     </div>
 
@@ -151,6 +180,9 @@
       <p>The BatCave · live on <a href="https://www.hybridirc.com/" target="_blank" rel="noopener">HybridIRC</a></p>
     </footer>
   </div>
+  <!-- Firebase (compat) — powers the synced jukebox. Config is public by design. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
   <script>
     function toggleFullscreen(){
       var el=document.getElementById('chatStage');
@@ -163,23 +195,133 @@
         if(exit){ exit.call(document); }
       }
     }
-    // ── BatCave Radio (New Bollywood) — off by default, plays on user click ──
-    var RADIO_ON = false;
-    function toggleRadio(){
-      var box = document.getElementById('radioPlayer');
-      var btn = document.getElementById('radioBtn');
-      RADIO_ON = !RADIO_ON;
-      if(RADIO_ON){
-        box.innerHTML = '<iframe allow="autoplay; encrypted-media" allowfullscreen ' +
-          'src="https://www.youtube.com/embed/videoseries?list=PL609kBi-Yz7742dAyKsCM5QNXlTFJuMKm&autoplay=1"></iframe>';
-        btn.textContent = '⏸ Turn off BatCave Radio';
-        btn.classList.add('on');
-      } else {
-        box.innerHTML = '';   // removing the iframe stops playback
-        btn.textContent = '📻 Turn on BatCave Radio';
-        btn.classList.remove('on');
-      }
+    // ── BatCave Radio — synced jukebox (Firebase RTDB + YouTube), off by default ──
+    var firebaseConfig = {
+      apiKey: "AIzaSyBEKnvdYS3_TLOet5qh0MmrdBMvwkVjHcA",
+      authDomain: "batcave-radio-d5eebe.firebaseapp.com",
+      databaseURL: "https://batcave-radio-d5eebe-default-rtdb.firebaseio.com",
+      projectId: "batcave-radio-d5eebe",
+      storageBucket: "batcave-radio-d5eebe.firebasestorage.app",
+      messagingSenderId: "358240419863",
+      appId: "1:358240419863:web:53594b8b0a6fc684df5c52"
+    };
+    // Default rotation (New Bollywood) — played when the shared queue is empty.
+    var DEFAULTS = ["qkeyLIfEAbc","g9Llg0avxGE","Ta1K02oqPoM","JJ41rt22Df8","M-Ob3hsGfCE"];
+
+    function jbEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+    function jbMsg(t){ var m=document.getElementById('jbMsg'); if(m) m.textContent=t||''; }
+    function jbNick(){ try{ var n=localStorage.getItem('bc_nick'); if(!n){ n='bat'+Math.floor(Math.random()*9000+1000); localStorage.setItem('bc_nick',n);} return n; }catch(e){ return 'someone'; } }
+
+    var nowRef=null, queueRef=null, srvOffset=0;
+    try{
+      firebase.initializeApp(firebaseConfig);
+      var db = firebase.database();
+      nowRef = db.ref('radio/nowPlaying');
+      queueRef = db.ref('radio/queue');
+      db.ref('.info/serverTimeOffset').on('value', function(s){ srvOffset = s.val()||0; });
+      nowRef.on('value', function(s){ onNowChange(s.val()); });
+      queueRef.orderByChild('addedAt').on('value', renderQueue);
+    }catch(err){ jbMsg('Radio backend unavailable.'); }
+    function srvNow(){ return Date.now()+srvOffset; }
+
+    var ytPlayer=null, ytReady=false, tuned=false, curVid=null, curNP=null;
+    window.onYouTubeIframeAPIReady = function(){ ytReady=true; if(tuned && !ytPlayer) makePlayer(); };
+
+    function jbToggle(){ tuned ? jbLeave() : jbJoinRadio(); }
+    function jbJoinRadio(){
+      tuned = true;
+      document.getElementById('jukeboxEl').classList.add('tuned');
+      var b=document.getElementById('jbJoin'); b.textContent='⏸ Leave'; b.classList.add('on');
+      if(ytReady && !ytPlayer) makePlayer(); else if(ytPlayer) syncNow(curNP);
+      ensurePlaying();
+    }
+    function jbLeave(){
+      tuned = false;
+      document.getElementById('jukeboxEl').classList.remove('tuned');
+      var b=document.getElementById('jbJoin'); b.textContent='▶ Tune in'; b.classList.remove('on');
+      if(ytPlayer){ try{ ytPlayer.stopVideo(); }catch(e){} }
+    }
+    function makePlayer(){
+      ytPlayer = new YT.Player('jbPlayer', {
+        width:'100%', height:'220',
+        playerVars:{ playsinline:1, rel:0, modestbranding:1 },
+        events:{ 'onReady':function(){ syncNow(curNP); }, 'onStateChange':onState, 'onError':onErr }
+      });
+    }
+    function onState(e){ if(e.data===YT.PlayerState.ENDED){ advance(curVid); } }
+    function onErr(){ advance(curVid); } // non-embeddable / removed → skip to next
+
+    function onNowChange(np){
+      curNP = np; curVid = (np && np.videoId) ? np.videoId : null;
+      var el=document.getElementById('jbNow');
+      if(np && np.title){
+        el.innerHTML = '🎶 <b>Now playing:</b> ' + jbEsc(np.title) +
+          ((np.addedBy && np.addedBy!=='radio') ? ' <span style="color:#9b93b8">· added by '+jbEsc(np.addedBy)+'</span>' : '');
+      } else if(np){ el.innerHTML='🎶 <b>Now playing</b>'; }
+      else { el.textContent = "Radio's off for you — tune in to hear what the room's playing right now."; }
+      if(tuned && ytPlayer) syncNow(np);
+    }
+    function syncNow(np){
+      if(!ytPlayer) return;
+      if(!np || !np.videoId){ ensurePlaying(); return; }
+      var seek = Math.max(0, (srvNow() - (np.startedAt||srvNow()))/1000);
+      try{ ytPlayer.loadVideoById({ videoId: np.videoId, startSeconds: seek }); }catch(e){}
+    }
+    function ensurePlaying(){
+      if(!nowRef) return;
+      nowRef.transaction(function(cur){
+        if(cur && cur.videoId) return; // already playing — don't disturb
+        var v = DEFAULTS[Math.floor(Math.random()*DEFAULTS.length)];
+        return { videoId:v, title:'New Bollywood mix', startedAt:srvNow(), addedBy:'radio' };
+      });
+    }
+    function advance(endedVid){
+      if(!queueRef || !nowRef) return;
+      queueRef.orderByChild('addedAt').limitToFirst(1).once('value').then(function(qs){
+        var item=null, key=null; qs.forEach(function(c){ item=c.val(); key=c.key; });
+        var next = item ? { videoId:item.videoId, title:item.title||'', addedBy:item.addedBy||'radio' } : null;
+        if(!next){
+          var pool = DEFAULTS.filter(function(v){ return v!==endedVid; }); if(!pool.length) pool=DEFAULTS;
+          next = { videoId: pool[Math.floor(Math.random()*pool.length)], title:'New Bollywood mix', addedBy:'radio' };
+        }
+        nowRef.transaction(function(cur){
+          if(cur && cur.videoId && cur.videoId!==endedVid) return; // someone already advanced — abort
+          return { videoId:next.videoId, title:next.title, startedAt:srvNow(), addedBy:next.addedBy };
+        }, function(err, committed){ if(committed && key){ queueRef.child(key).remove(); } });
+      });
+    }
+    function jbAdd(){
+      var inp=document.getElementById('jbInput'); var raw=(inp.value||'').trim(); if(!raw) return;
+      var vid=parseYtId(raw);
+      if(!vid){ jbMsg('Paste a valid YouTube link or 11-char video ID.'); return; }
+      if(!queueRef){ jbMsg('Radio backend unavailable.'); return; }
+      inp.value=''; jbMsg('');
+      var who=jbNick();
+      fetch('https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v='+vid)
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          var title=(d&&d.title) ? String(d.title).slice(0,140) : 'Requested song';
+          queueRef.push({ videoId:vid, title:title, addedBy:who, addedAt:firebase.database.ServerValue.TIMESTAMP });
+          jbMsg('Queued for the whole room ✓');
+        })
+        .catch(function(){ queueRef.push({ videoId:vid, title:'Requested song', addedBy:who, addedAt:firebase.database.ServerValue.TIMESTAMP }); });
+    }
+    function parseYtId(s){
+      var m=s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
+      if(m) return m[1];
+      if(/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+      return null;
+    }
+    function renderQueue(qs){
+      var list=document.getElementById('jbQueue'); if(!list) return;
+      var items=[]; qs.forEach(function(c){ items.push(c.val()); });
+      if(!items.length){ list.innerHTML='<div class="jb-empty">Queue\'s empty — the station rolls through New Bollywood on its own. Paste a YouTube link above to add a song <b>everyone</b> hears next.</div>'; return; }
+      list.innerHTML='<div class="jb-qhead">Up next · '+items.length+'</div>'+items.map(function(it){
+        return '<div class="jb-qrow"><span class="jb-qt">'+jbEsc(it.title)+'</span><span class="jb-qby">'+jbEsc(it.addedBy||'')+'</span></div>';
+      }).join('');
     }
   </script>
+  <!-- YouTube IFrame API (calls window.onYouTubeIframeAPIReady when loaded) -->
+  <script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
