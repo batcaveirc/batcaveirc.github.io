@@ -68,7 +68,7 @@
   #chatStage:-webkit-full-screen .frame-holder{flex:1}
   #chatStage:-webkit-full-screen iframe{height:100%}
   .frame-holder{position:relative;overflow:hidden;border-radius:0 0 18px 18px}
-  iframe{display:block;width:100%;height:70vh;min-height:520px;border:0;background:#0b0b14}
+  .frame-holder iframe{display:block;width:100%;height:70vh;min-height:520px;border:0;background:#0b0b14}
 
   /* rules / welcome cards */
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
@@ -104,7 +104,7 @@
   .radio-note{color:var(--muted);font-size:.78rem}
   .radio-note b{color:var(--violet)}
   #radioPlayer{width:100%}
-  #radioPlayer iframe{width:100%;height:170px;border:0;border-radius:10px;margin-top:2px}
+  #radioPlayer iframe{width:100%;height:200px;min-height:0;border:0;border-radius:10px;margin-top:2px}
   @media(max-width:640px){.dock{grid-template-columns:1fr}}
 </style>
 </head>
