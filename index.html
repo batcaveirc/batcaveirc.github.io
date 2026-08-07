@@ -88,6 +88,24 @@
     background:linear-gradient(180deg,var(--violet-deep),#5b21b6);color:#fff;font-weight:600;
     text-decoration:none;letter-spacing:.03em;box-shadow:0 8px 24px rgba(124,58,237,.35);border:0;cursor:pointer;font-size:.95rem;font-family:inherit}
   .fullscreen-link:hover{filter:brightness(1.12)}
+  /* rooms hint + radio dock */
+  .dock{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+  .dock-item{background:linear-gradient(160deg, rgba(30,15,56,.66), rgba(10,8,18,.66));
+    border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .rooms-hint{color:var(--muted);font-size:.86rem;line-height:1.6}
+  .rooms-hint b{color:var(--ink)}
+  .rooms-hint code{background:rgba(167,139,250,.16);color:var(--violet);padding:1px 6px;border-radius:5px;font-size:.82em}
+  .radio-box{display:flex;flex-direction:column;gap:9px;align-items:flex-start}
+  .radio-toggle{background:linear-gradient(180deg,var(--violet-deep),#5b21b6);color:#fff;border:0;cursor:pointer;
+    border-radius:10px;padding:9px 16px;font-weight:600;font-size:.9rem;font-family:inherit;letter-spacing:.02em;
+    box-shadow:0 8px 22px rgba(124,58,237,.32)}
+  .radio-toggle:hover{filter:brightness(1.12)}
+  .radio-toggle.on{background:linear-gradient(180deg,#b91c1c,#7f1d1d);box-shadow:0 8px 22px rgba(185,28,28,.35)}
+  .radio-note{color:var(--muted);font-size:.78rem}
+  .radio-note b{color:var(--violet)}
+  #radioPlayer{width:100%}
+  #radioPlayer iframe{width:100%;height:170px;border:0;border-radius:10px;margin-top:2px}
+  @media(max-width:640px){.dock{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -118,10 +136,22 @@
         <button class="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen">⛶ Fullscreen</button>
       </div>
       <div class="frame-holder">
-        <iframe src="https://kiwiirc.hybridirc.com/#batcave"
+        <iframe src="https://kiwiirc.hybridirc.com/#batcave,#🅱🅰🆃🅲🅰🆅🅴"
                 title="The BatCave live chat"
                 loading="lazy"
                 referrerpolicy="no-referrer"></iframe>
+      </div>
+    </div>
+
+    <!-- Rooms hint + Radio dock -->
+    <div class="dock">
+      <div class="dock-item rooms-hint">
+        <b>🚪 Rooms:</b> the <b>#batcave</b> lobby and the <b>main room</b> open as tabs right inside the chat — switch between them up top. Want a different channel? Click the <b>＋</b> in the chat or type <code>/list</code> to browse every room on the network.
+      </div>
+      <div class="dock-item radio-box">
+        <button class="radio-toggle" id="radioBtn" onclick="toggleRadio()">📻 Turn on BatCave Radio</button>
+        <span class="radio-note">New Bollywood · non-stop · starts <b>OFF</b> — flip it on whenever you like</span>
+        <div id="radioPlayer"></div>
       </div>
     </div>
 
@@ -161,6 +191,23 @@
       } else {
         var exit=document.exitFullscreen||document.webkitExitFullscreen;
         if(exit){ exit.call(document); }
+      }
+    }
+    // ── BatCave Radio (New Bollywood) — off by default, plays on user click ──
+    var RADIO_ON = false;
+    function toggleRadio(){
+      var box = document.getElementById('radioPlayer');
+      var btn = document.getElementById('radioBtn');
+      RADIO_ON = !RADIO_ON;
+      if(RADIO_ON){
+        box.innerHTML = '<iframe allow="autoplay; encrypted-media" allowfullscreen ' +
+          'src="https://www.youtube.com/embed/videoseries?list=PL609kBi-Yz7742dAyKsCM5QNXlTFJuMKm&autoplay=1"></iframe>';
+        btn.textContent = '⏸ Turn off BatCave Radio';
+        btn.classList.add('on');
+      } else {
+        box.innerHTML = '';   // removing the iframe stops playback
+        btn.textContent = '📻 Turn on BatCave Radio';
+        btn.classList.remove('on');
       }
     }
   </script>
