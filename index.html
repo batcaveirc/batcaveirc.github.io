@@ -116,7 +116,19 @@
   .jb-qrow .jb-qby{color:var(--muted);font-size:.72rem;white-space:nowrap}
   .jb-empty{color:var(--muted);font-size:.82rem;line-height:1.55}
   .jb-empty b{color:var(--ink)}
-</style>
+
+  /* ── Phone: chat fills the screen (like native KiwiIRC); title drops below so
+        nobody has to scroll past the hero to reach the room. ── */
+  @media (max-width: 760px){
+    .wrap{ display:flex; flex-direction:column; padding:6px 12px 48px; max-width:100%; }
+    .stage{ order:1; }
+    header{ order:2; margin:28px 0 4px; }
+    .dock{ order:3; }
+    footer{ order:4; }
+    .frame-holder{ border-radius:0 0 16px 16px; }
+    .frame-holder iframe{ height:calc(100vh - 64px); height:calc(100dvh - 64px); min-height:420px; }
+    .stage-bar{ padding:9px 14px; }
+  }
 </head>
 <body>
   <!-- drifting bats (decorative) -->
