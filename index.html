@@ -116,6 +116,13 @@
   .jb-qrow .jb-qby{color:var(--muted);font-size:.72rem;white-space:nowrap}
   .jb-empty{color:var(--muted);font-size:.82rem;line-height:1.55}
   .jb-empty b{color:var(--ink)}
+  /* co-op doodle canvas */
+  .dd-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .dd-tools input[type=color]{width:36px;height:30px;border:1px solid var(--line);border-radius:7px;background:#0d0d1a;padding:2px;cursor:pointer}
+  .dd-btn{background:rgba(167,139,250,.16);color:var(--violet);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.78rem;white-space:nowrap}
+  .dd-btn:hover{background:rgba(167,139,250,.3);color:#fff}
+  .dd-btn.on{background:var(--violet-deep);color:#fff;border-color:var(--violet-deep)}
+  #ddCanvas{display:block;width:100%;height:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#0d0d1a;touch-action:none;cursor:crosshair}
 
   /* ── Phone: chat covers the ENTIRE screen, edge-to-edge, no chrome — like
         native KiwiIRC. Order (stage→dock→header→footer) comes from the base
@@ -185,6 +192,18 @@
         </div>
         <div class="jb-msg" id="jbMsg"></div>
         <div class="jb-queue" id="jbQueue"></div>
+      </div>
+
+      <div class="dock-item doodle" id="doodleBox">
+        <div class="jb-head">
+          <div class="jb-title">🎨 Coven Canvas<span class="jb-sub">Draw together · the whole room sees it live</span></div>
+          <div class="dd-tools">
+            <input type="color" id="ddColor" value="#a78bfa" title="Colour" aria-label="Brush colour">
+            <button class="dd-btn" id="ddEraseBtn" onclick="ddToggleErase()" title="Eraser">🩹 Eraser</button>
+            <button class="dd-btn" onclick="ddClear()" title="Wipe the canvas for everyone">🧹 Clear</button>
+          </div>
+        </div>
+        <canvas id="ddCanvas" width="1000" height="460"></canvas>
       </div>
     </div>
 
@@ -342,6 +361,45 @@
         return '<div class="jb-qrow"><span class="jb-qt">'+jbEsc(it.title)+'</span><span class="jb-qby">'+jbEsc(it.addedBy||'')+'</span></div>';
       }).join('');
     }
+
+    // ── Coven Canvas — real-time co-op doodle (Firebase RTDB) ────────────────
+    (function(){
+      var canvas=document.getElementById('ddCanvas');
+      if(!canvas || typeof firebase==='undefined') return;
+      var ctx=canvas.getContext('2d');
+      var W=canvas.width, H=canvas.height, BG='#0d0d1a';
+      var ddb=firebase.database();
+      var strokesRef=ddb.ref('doodle/strokes'), clearRef=ddb.ref('doodle/clear');
+      var drawing=false, erasing=false, last=null, pushPt=null, pushT=0, clrInit=false;
+
+      function seg(a,b){ return { x0:a.x,y0:a.y,x1:b.x,y1:b.y, c:document.getElementById('ddColor').value, w:3, e:erasing?1:0 }; }
+      function draw(s){
+        ctx.strokeStyle = s.e ? BG : (s.c||'#a78bfa');
+        ctx.lineWidth = (s.w||3)*(s.e?4:1);
+        ctx.lineCap='round'; ctx.lineJoin='round';
+        ctx.beginPath(); ctx.moveTo(s.x0*W,s.y0*H); ctx.lineTo(s.x1*W,s.y1*H); ctx.stroke();
+      }
+      strokesRef.on('child_added', function(sn){ var s=sn.val(); if(s) draw(s); });   // existing + live
+      clearRef.on('value', function(){ if(!clrInit){ clrInit=true; return; } ctx.clearRect(0,0,W,H); });
+
+      function pos(ev){
+        var r=canvas.getBoundingClientRect();
+        return { x:Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width)), y:Math.min(1,Math.max(0,(ev.clientY-r.top)/r.height)) };
+      }
+      canvas.addEventListener('pointerdown', function(ev){ ev.preventDefault(); drawing=true; last=pushPt=pos(ev); pushT=Date.now(); try{canvas.setPointerCapture(ev.pointerId);}catch(e){} });
+      canvas.addEventListener('pointermove', function(ev){
+        if(!drawing) return; ev.preventDefault();
+        var p=pos(ev);
+        if(last) draw(seg(last,p));                                   // smooth locally
+        last=p;
+        var now=Date.now();
+        if(pushPt && now-pushT>28){ strokesRef.push(seg(pushPt,p)); pushPt=p; pushT=now; }  // throttled sync
+      });
+      window.addEventListener('pointerup', function(){ if(drawing && pushPt && last){ strokesRef.push(seg(pushPt,last)); } drawing=false; last=pushPt=null; });
+
+      window.ddToggleErase=function(){ erasing=!erasing; var b=document.getElementById('ddEraseBtn'); if(b) b.classList.toggle('on',erasing); };
+      window.ddClear=function(){ strokesRef.remove(); clearRef.set(Date.now()); ctx.clearRect(0,0,W,H); };
+    })();
   </script>
   <!-- YouTube IFrame API (calls window.onYouTubeIframeAPIReady when loaded) -->
   <script src="https://www.youtube.com/iframe_api"></script>
