@@ -32,9 +32,9 @@
        animation:fall linear infinite;filter:drop-shadow(0 0 6px rgba(0,0,0,.6));z-index:0}
   @keyframes fall{0%{transform:translateY(-10vh) rotate(-8deg)}100%{transform:translateY(115vh) rotate(8deg)}}
 
-  .wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:28px 20px 60px}
+  .wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:12px 20px 56px;display:flex;flex-direction:column}
 
-  header{text-align:center;margin-bottom:26px}
+  header{text-align:center;order:3;margin:40px 0 6px}
   .crest{font-size:52px;line-height:1;filter:drop-shadow(0 0 18px rgba(167,139,250,.55))}
   h1{font-family:'Cinzel',Georgia,serif;font-weight:900;letter-spacing:.14em;
      font-size:clamp(2.1rem,6vw,3.6rem);margin:.28em 0 .12em;
@@ -45,7 +45,7 @@
   .tagline .accent{color:var(--crimson-glow);font-weight:600}
 
   /* chat frame */
-  .stage{position:relative;border-radius:18px;padding:0;
+  .stage{position:relative;order:1;border-radius:18px;padding:0;display:flex;flex-direction:column;height:calc(100vh - 24px);
     background:linear-gradient(160deg, rgba(30,15,56,.9), rgba(10,8,18,.92));
     border:1px solid var(--line);
     box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 24px 70px rgba(0,0,0,.6),
@@ -67,12 +67,12 @@
   #chatStage:-webkit-full-screen{border-radius:0;border:0;width:100vw;height:100vh;display:flex;flex-direction:column;background:#0b0b14}
   #chatStage:-webkit-full-screen .frame-holder{flex:1}
   #chatStage:-webkit-full-screen iframe{height:100%}
-  .frame-holder{position:relative;overflow:hidden;border-radius:0 0 18px 18px}
-  .frame-holder iframe{display:block;width:100%;height:84vh;min-height:640px;border:0;background:#0b0b14}
+  .frame-holder{position:relative;overflow:hidden;border-radius:0 0 18px 18px;flex:1;min-height:0}
+  .frame-holder iframe{display:block;width:100%;height:100%;min-height:0;border:0;background:#0b0b14}
 
   /* rules / welcome cards */
 
-  footer{text-align:center;margin-top:34px;color:var(--muted);font-size:.82rem}
+  footer{text-align:center;order:4;margin-top:34px;color:var(--muted);font-size:.82rem}
   footer a{color:var(--violet);text-decoration:none;border-bottom:1px dotted var(--line)}
   footer a:hover{color:#fff}
   .fullscreen-link{display:inline-block;margin-top:14px;padding:9px 18px;border-radius:10px;
@@ -80,7 +80,7 @@
     text-decoration:none;letter-spacing:.03em;box-shadow:0 8px 24px rgba(124,58,237,.35);border:0;cursor:pointer;font-size:.95rem;font-family:inherit}
   .fullscreen-link:hover{filter:brightness(1.12)}
   /* rooms hint + radio dock */
-  .dock{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px}
+  .dock{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px;order:2}
   .dock-item{background:linear-gradient(160deg, rgba(30,15,56,.66), rgba(10,8,18,.66));
     border:1px solid var(--line);border-radius:14px;padding:16px 18px}
   .rooms-hint{color:var(--muted);font-size:.86rem;line-height:1.6}
@@ -117,17 +117,17 @@
   .jb-empty{color:var(--muted);font-size:.82rem;line-height:1.55}
   .jb-empty b{color:var(--ink)}
 
-  /* ── Phone: chat fills the screen (like native KiwiIRC); title drops below so
-        nobody has to scroll past the hero to reach the room. ── */
+  /* ── Phone: chat covers the ENTIRE screen, edge-to-edge, no chrome — like
+        native KiwiIRC. Order (stage→dock→header→footer) comes from the base
+        rules, so the title sits all the way at the bottom on every device. ── */
   @media (max-width: 760px){
-    .wrap{ display:flex; flex-direction:column; padding:6px 12px 48px; max-width:100%; }
-    .stage{ order:1; }
-    header{ order:2; margin:28px 0 4px; }
-    .dock{ order:3; }
-    footer{ order:4; }
-    .frame-holder{ border-radius:0 0 16px 16px; }
-    .frame-holder iframe{ height:calc(100vh - 64px); height:calc(100dvh - 64px); min-height:420px; }
-    .stage-bar{ padding:9px 14px; }
+    .wrap{ padding:0; max-width:100%; }
+    .stage-bar{ display:none; }
+    .stage{ height:100vh; height:100dvh; border:0; border-radius:0; box-shadow:none; margin:0; }
+    .frame-holder{ border-radius:0; }
+    .dock{ padding:16px 12px 0; }
+    header{ padding:24px 16px 0; margin:0; }
+    footer{ padding:0 16px; margin-top:26px; }
   }
 </style>
 </head>
