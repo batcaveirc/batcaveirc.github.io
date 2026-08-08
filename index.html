@@ -237,7 +237,7 @@
     }catch(err){ jbMsg('Radio backend unavailable.'); }
     function srvNow(){ return Date.now()+srvOffset; }
 
-    var ytPlayer=null, ytReady=false, tuned=false, curVid=null, curNP=null;
+    var ytPlayer=null, ytReady=false, tuned=false, curVid=null, curNP=null, lastSeek=0, lastSeekVid=null;
     window.onYouTubeIframeAPIReady = function(){ ytReady=true; if(tuned && !ytPlayer) makePlayer(); };
 
     function jbToggle(){ tuned ? jbLeave() : jbJoinRadio(); }
@@ -261,7 +261,15 @@
         events:{ 'onReady':function(){ syncNow(curNP); }, 'onStateChange':onState, 'onError':onErr }
       });
     }
-    function onState(e){ if(e.data===YT.PlayerState.ENDED){ advance(curVid); } }
+    function onState(e){
+      if(e.data===YT.PlayerState.ENDED){ advance(curVid); return; }
+      if(e.data===YT.PlayerState.PLAYING){
+        var dur=ytPlayer.getDuration();
+        // stale station: the seek target is past this song's end (nobody was
+        // around to advance it) → roll everyone forward to a fresh track.
+        if(dur>0 && lastSeek > dur+2){ advance(lastSeekVid); }
+      }
+    }
     function onErr(){ advance(curVid); } // non-embeddable / removed → skip to next
 
     function onNowChange(np){
@@ -278,6 +286,7 @@
       if(!ytPlayer) return;
       if(!np || !np.videoId){ ensurePlaying(); return; }
       var seek = Math.max(0, (srvNow() - (np.startedAt||srvNow()))/1000);
+      lastSeek = seek; lastSeekVid = np.videoId;
       try{ ytPlayer.loadVideoById({ videoId: np.videoId, startSeconds: seek }); }catch(e){}
     }
     function ensurePlaying(){
