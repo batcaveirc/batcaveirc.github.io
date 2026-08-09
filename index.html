@@ -8,7 +8,7 @@
 <!-- Gothic display font (falls back to Georgia if it can't load) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700;900&family=Marcellus&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg0:#07060d; --bg1:#140a26; --bg2:#1e0f38;
@@ -20,13 +20,18 @@
   body{
     min-height:100vh; color:var(--ink);
     font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    background:
-      radial-gradient(1200px 600px at 50% -10%, rgba(124,58,237,.28), transparent 60%),
-      radial-gradient(900px 500px at 85% 10%, rgba(185,28,28,.14), transparent 55%),
-      linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 55%, var(--bg0) 100%);
+    background:linear-gradient(-45deg,#10052a,#34114f,#1a0836,#4a1d6e,#0e1f45,#2b0b3f);
+    background-size:420% 420%;
     background-attachment:fixed;
+    animation:aurora 30s ease-in-out infinite;
     overflow-x:hidden;
   }
+  @keyframes aurora{ 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  body::before{ content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1100px 520px at 50% -8%, rgba(167,139,250,.22), transparent 60%),
+      radial-gradient(820px 460px at 88% 14%, rgba(236,72,153,.13), transparent 55%),
+      radial-gradient(760px 520px at 8% 82%, rgba(56,189,248,.10), transparent 62%); }
   /* drifting bats */
   .bat{position:fixed;top:-40px;font-size:26px;opacity:.10;pointer-events:none;
        animation:fall linear infinite;filter:drop-shadow(0 0 6px rgba(0,0,0,.6));z-index:0}
@@ -36,7 +41,7 @@
 
   header{text-align:center;order:3;margin:40px 0 6px}
   .crest{font-size:52px;line-height:1;filter:drop-shadow(0 0 18px rgba(167,139,250,.55))}
-  h1{font-family:'Cinzel',Georgia,serif;font-weight:900;letter-spacing:.14em;
+  h1{font-family:'Cinzel Decorative','Cinzel',Georgia,serif;font-weight:900;letter-spacing:.08em;
      font-size:clamp(2.1rem,6vw,3.6rem);margin:.28em 0 .12em;
      background:linear-gradient(180deg,#fff, var(--violet) 65%, var(--violet-deep));
      -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -83,9 +88,6 @@
   .dock{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px;order:2}
   .dock-item{background:linear-gradient(160deg, rgba(30,15,56,.66), rgba(10,8,18,.66));
     border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-  .rooms-hint{color:var(--muted);font-size:.86rem;line-height:1.6}
-  .rooms-hint b{color:var(--ink)}
-  .rooms-hint code{background:rgba(167,139,250,.16);color:var(--violet);padding:1px 6px;border-radius:5px;font-size:.82em}
   /* synced jukebox */
   .jb-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .jb-title{font-family:'Cinzel',Georgia,serif;letter-spacing:.04em;color:#fff;font-size:1rem;font-weight:700}
@@ -122,7 +124,13 @@
   .dd-btn{background:rgba(167,139,250,.16);color:var(--violet);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.78rem;white-space:nowrap}
   .dd-btn:hover{background:rgba(167,139,250,.3);color:#fff}
   .dd-btn.on{background:var(--violet-deep);color:#fff;border-color:var(--violet-deep)}
-  #ddCanvas{display:block;width:100%;height:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#0d0d1a;touch-action:none;cursor:crosshair}
+  #ddCanvas{display:block;width:100%;height:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair}
+  /* youtube search results */
+  .jb-res{display:flex;align-items:center;gap:10px;padding:6px;border-radius:8px;cursor:pointer;border-top:1px solid rgba(167,139,250,.1)}
+  .jb-res:hover{background:rgba(167,139,250,.14)}
+  .jb-res img{width:64px;height:40px;object-fit:cover;border-radius:5px;flex-shrink:0}
+  .jb-res .jb-res-t{color:var(--ink);font-size:.82rem;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .jb-res .jb-res-add{margin-left:auto;color:var(--violet);font-weight:700;font-size:1.1rem;flex-shrink:0;padding:0 6px}
 
   /* ── Phone: chat covers the ENTIRE screen, edge-to-edge, no chrome — like
         native KiwiIRC. Order (stage→dock→header→footer) comes from the base
@@ -175,9 +183,6 @@
 
     <!-- Rooms hint + Radio dock -->
     <div class="dock">
-      <div class="dock-item rooms-hint">
-        <b>🚪 Rooms:</b> the <b>#batcave</b> lobby and the <b>main room</b> open as tabs right inside the chat — switch between them up top. Want a different channel? Click the <b>＋</b> in the chat or type <code>/list</code> to browse every room on the network.
-      </div>
       <div class="dock-item jukebox" id="jukeboxEl">
         <div class="jb-head">
           <div class="jb-title">📻 BatCave Radio<span class="jb-sub">One station · the whole room hears the same song · New Bollywood</span></div>
@@ -186,11 +191,12 @@
         <div class="jb-now" id="jbNow">Radio's off for you — tune in to hear what the room's playing right now.</div>
         <div class="jb-player-wrap" id="jbPlayerWrap"><div id="jbPlayer"></div></div>
         <div class="jb-add" id="jbAdd">
-          <input id="jbInput" maxlength="200" placeholder="Paste a YouTube link to queue a song for everyone…"
+          <input id="jbInput" maxlength="200" placeholder="Search a song, or paste a YouTube link…"
                  onkeydown="if(event.key==='Enter')jbAdd()">
-          <button onclick="jbAdd()">＋ Queue</button>
+          <button onclick="jbAdd()">🔍 Search</button>
         </div>
         <div class="jb-msg" id="jbMsg"></div>
+        <div id="jbResults" class="jb-queue"></div>
         <div class="jb-queue" id="jbQueue"></div>
       </div>
 
@@ -198,7 +204,7 @@
         <div class="jb-head">
           <div class="jb-title">🎨 Coven Canvas<span class="jb-sub">Draw together · the whole room sees it live</span></div>
           <div class="dd-tools">
-            <input type="color" id="ddColor" value="#a78bfa" title="Colour" aria-label="Brush colour">
+            <input type="color" id="ddColor" value="#7c3aed" title="Colour" aria-label="Brush colour">
             <button class="dd-btn" id="ddEraseBtn" onclick="ddToggleErase()" title="Eraser">🩹 Eraser</button>
             <button class="dd-btn" onclick="ddClear()" title="Wipe the canvas for everyone">🧹 Clear</button>
           </div>
@@ -331,21 +337,54 @@
         }, function(err, committed){ if(committed && key){ queueRef.child(key).remove(); } });
       });
     }
+    var YT_KEY='AIzaSyBEKnvdYS3_TLOet5qh0MmrdBMvwkVjHcA';
     function jbAdd(){
       var inp=document.getElementById('jbInput'); var raw=(inp.value||'').trim(); if(!raw) return;
-      var vid=parseYtId(raw);
-      if(!vid){ jbMsg('Paste a valid YouTube link or 11-char video ID.'); return; }
       if(!queueRef){ jbMsg('Radio backend unavailable.'); return; }
-      inp.value=''; jbMsg('');
-      var who=jbNick();
-      fetch('https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v='+vid)
-        .then(function(r){ return r.ok ? r.json() : null; })
+      var vid=parseYtId(raw);
+      if(vid){ // a link → queue directly
+        inp.value=''; jbMsg(''); document.getElementById('jbResults').innerHTML='';
+        var who=jbNick();
+        fetch('https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v='+vid)
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){
+            var title=(d&&d.title) ? String(d.title).slice(0,140) : 'Requested song';
+            queueRef.push({ videoId:vid, title:title, addedBy:who, addedAt:firebase.database.ServerValue.TIMESTAMP });
+            jbMsg('Queued for the whole room ✓');
+          })
+          .catch(function(){ queueRef.push({ videoId:vid, title:'Requested song', addedBy:who, addedAt:firebase.database.ServerValue.TIMESTAMP }); });
+        return;
+      }
+      ytSearch(raw); // otherwise treat it as a search
+    }
+    function ytSearch(q){
+      jbMsg('Searching…');
+      fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8&q='+encodeURIComponent(q)+'&key='+YT_KEY)
+        .then(function(r){ return r.json(); })
         .then(function(d){
-          var title=(d&&d.title) ? String(d.title).slice(0,140) : 'Requested song';
-          queueRef.push({ videoId:vid, title:title, addedBy:who, addedAt:firebase.database.ServerValue.TIMESTAMP });
-          jbMsg('Queued for the whole room ✓');
+          if(d.error){ jbMsg('Search isn\'t switched on yet (room owner: enable the YouTube Data API).'); return; }
+          var items=(d.items||[]).filter(function(it){ return it.id && it.id.videoId; }).map(function(it){
+            return { id:it.id.videoId, title:it.snippet.title, thumb:(it.snippet.thumbnails&&it.snippet.thumbnails.default?it.snippet.thumbnails.default.url:'') };
+          });
+          jbMsg(items.length?'Tap a result to queue it for the room:':'No results — try different words.');
+          renderResults(items);
         })
-        .catch(function(){ queueRef.push({ videoId:vid, title:'Requested song', addedBy:who, addedAt:firebase.database.ServerValue.TIMESTAMP }); });
+        .catch(function(){ jbMsg('Search failed — check your connection.'); });
+    }
+    function renderResults(items){
+      var box=document.getElementById('jbResults'); if(!box) return;
+      if(!items.length){ box.innerHTML=''; return; }
+      box.innerHTML=items.map(function(it){
+        return '<div class="jb-res" data-id="'+it.id+'" data-title="'+encodeURIComponent(it.title)+'">'+
+          (it.thumb?'<img src="'+it.thumb+'" alt="">':'')+
+          '<span class="jb-res-t">'+jbEsc(it.title)+'</span><span class="jb-res-add">＋</span></div>';
+      }).join('');
+      box.onclick=function(e){ var el=e.target.closest('.jb-res'); if(el){ jbQueueVid(el.getAttribute('data-id'), decodeURIComponent(el.getAttribute('data-title'))); } };
+    }
+    function jbQueueVid(id,title){
+      if(!queueRef||!id) return;
+      queueRef.push({ videoId:id, title:String(title).slice(0,140), addedBy:jbNick(), addedAt:firebase.database.ServerValue.TIMESTAMP });
+      jbMsg('Queued ✓'); document.getElementById('jbResults').innerHTML=''; document.getElementById('jbInput').value='';
     }
     function parseYtId(s){
       var m=s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/);
@@ -367,7 +406,7 @@
       var canvas=document.getElementById('ddCanvas');
       if(!canvas || typeof firebase==='undefined') return;
       var ctx=canvas.getContext('2d');
-      var W=canvas.width, H=canvas.height, BG='#0d0d1a';
+      var W=canvas.width, H=canvas.height, BG='#ffffff';
       var ddb=firebase.database();
       var strokesRef=ddb.ref('doodle/strokes'), clearRef=ddb.ref('doodle/clear');
       var drawing=false, erasing=false, last=null, pushPt=null, pushT=0, clrInit=false;
