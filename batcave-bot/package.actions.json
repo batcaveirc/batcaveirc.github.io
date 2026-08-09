@@ -1,0 +1,21 @@
+{
+  "name": "batcave-bot-actions",
+  "version": "1.0.0",
+  "description": "BatCave Vampire Bot - Lightweight GitHub Actions Edition",
+  "main": "action-bot.js",
+  "scripts": {
+    "start": "node action-bot.js",
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [
+    "irc",
+    "bot",
+    "vampire",
+    "batcave"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "irc-framework": "^4.6.0"
+  }
+}

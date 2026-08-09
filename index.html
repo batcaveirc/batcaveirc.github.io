@@ -5,9 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The BatCave — Live Chat</title>
 <meta name="description" content="Step into The BatCave — live IRC chat on HybridIRC. Pick a name and join the coven.">
-<!-- Gothic display font (falls back to Georgia if it can't load) -->
+<!-- Open Graph / Social Sharing -->
+<meta property="og:title" content="The BatCave — Live Chat">
+<meta property="og:description" content="Where the night owls gather. Join the coven — no account, no download.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://batcave.chat/">
+<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'%3E%3Crect fill='%231a0836' width='100%25' height='100%25'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='serif' font-size='180' fill='%23a78bfa'%3E🦇 The BatCave 🦇%3C/text%3E%3C/svg%3E">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The BatCave — Live Chat">
+<meta name="twitter:description" content="Where the night owls gather. Join the coven — no account, no download.">
+<!-- Favicon -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🦇%3C/text%3E%3C/svg%3E">
+<!-- Security Headers via Meta -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.youtube.com https://www.googleapis.com https://kiwiirc.hybridirc.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://batcave-radio-d5eebe-default-rtdb.firebaseio.com wss://*.hybridirc.com wss://*.firebaseio.com https://www.googleapis.com https://www.youtube.com; frame-src 'self' https://kiwiirc.hybridirc.com https://www.youtube.com https://www.youtube-nocookie.com; img-src 'self' data: https:; media-src 'self' https:;">
+<!-- Preconnect hints -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://www.youtube.com">
+<link rel="preconnect" href="https://kiwiirc.hybridirc.com">
+<link rel="preconnect" href="https://batcave-radio-d5eebe-default-rtdb.firebaseio.com">
+<!-- Prefetch YouTube API only when needed -->
+<link rel="dns-prefetch" href="https://www.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700;900&family=Marcellus&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -154,9 +173,11 @@
   <div class="bat" style="left:71%;animation-duration:30s;animation-delay:-14s;font-size:32px">🦇</div>
   <div class="bat" style="left:88%;animation-duration:24s;animation-delay:-7s;font-size:18px">🦇</div>
 
-  <div class="wrap">
-    <header>
-      <div class="crest">🦇</div>
+  <!-- Skip link for accessibility -->
+  <a href="#chatStage" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Skip to chat</a>
+  <div class="wrap" role="main">
+    <header aria-label="Site header">
+      <div class="crest" aria-hidden="true">🦇</div>
       <!-- EDIT ME: your room name -->
       <h1>The&nbsp;BatCave</h1>
       <!-- EDIT ME: your tagline -->
@@ -166,16 +187,17 @@
     <!-- ── LIVE CHAT EMBED (HybridIRC / KiwiIRC) ─────────────────────────────
          This is the official HybridIRC embed. To point it at a different room,
          change  #batcave  in the src below to your channel name. -->
-    <div class="stage" id="chatStage">
-      <div class="stage-bar">
-        <span class="dot"></span>
+    <div class="stage" id="chatStage" role="region" aria-label="Live chat area">
+      <div class="stage-bar" role="toolbar" aria-label="Chat controls">
+        <span class="dot" aria-hidden="true"></span>
         <span class="room">#batcave</span>
         <span class="live">● live now</span>
-        <button class="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen">⛶ Fullscreen</button>
+        <button class="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen" aria-label="Toggle fullscreen mode">⛶ Fullscreen</button>
       </div>
       <div class="frame-holder">
         <iframe src="https://kiwiirc.hybridirc.com/#batcave,#🅱🅰🆃🅲🅰🆅🅴"
                 title="The BatCave live chat"
+                aria-label="Live IRC chat iframe"
                 allow="microphone; camera; fullscreen; display-capture; autoplay"
                 allowfullscreen
                 loading="lazy"
@@ -184,42 +206,83 @@
     </div>
 
     <!-- Rooms hint + Radio dock -->
-    <div class="dock">
-      <div class="dock-item jukebox" id="jukeboxEl">
+    <div class="dock" role="navigation" aria-label="Additional features">
+      <div class="dock-item jukebox" id="jukeboxEl" role="region" aria-labelledby="jbTitle">
         <div class="jb-head">
-          <div class="jb-title">📻 BatCave Radio<span class="jb-sub">One station · the whole room hears the same song · New Bollywood</span></div>
-          <button class="jb-join" id="jbJoin" onclick="jbToggle()">▶ Tune in</button>
+          <div class="jb-title" id="jbTitle">📻 BatCave Radio<span class="jb-sub">One station · the whole room hears the same song · New Bollywood</span></div>
+          <button class="jb-join" id="jbJoin" onclick="jbToggle()" aria-pressed="false">▶ Tune in</button>
         </div>
-        <div class="jb-now" id="jbNow">Radio's off for you — tune in to hear what the room's playing right now.</div>
-        <div class="jb-player-wrap" id="jbPlayerWrap"><div id="jbPlayer"></div></div>
+        <div class="jb-now" id="jbNow" aria-live="polite">Radio's off for you — tune in to hear what the room's playing right now.</div>
+        <div class="jb-player-wrap" id="jbPlayerWrap"><div id="jbPlayer" role="application" aria-label="YouTube music player"></div></div>
         <div class="jb-add" id="jbAdd">
           <input id="jbInput" maxlength="200" placeholder="Search a song, or paste a YouTube link…"
-                 onkeydown="if(event.key==='Enter')jbAdd()">
-          <button onclick="jbAdd()">🔍 Search</button>
+                 onkeydown="if(event.key==='Enter')jbAdd()" aria-label="Search for a song or paste YouTube URL">
+          <button onclick="jbAdd()" aria-label="Search for songs">🔍 Search</button>
         </div>
-        <div class="jb-msg" id="jbMsg"></div>
-        <div id="jbResults" class="jb-queue"></div>
-        <div class="jb-queue" id="jbQueue"></div>
+        <div class="jb-msg" id="jbMsg" role="status" aria-live="polite"></div>
+        <div id="jbResults" class="jb-queue" role="list"></div>
+        <div class="jb-queue" id="jbQueue" role="list" aria-label="Song queue"></div>
       </div>
 
-      <div class="dock-item doodle" id="doodleBox">
+      <div class="dock-item doodle" id="doodleBox" role="region" aria-labelledby="ddTitle">
         <div class="jb-head">
-          <div class="jb-title">🎨 Coven Canvas<span class="jb-sub">Draw together · the whole room sees it live</span></div>
+          <div class="jb-title" id="ddTitle">🎨 Coven Canvas<span class="jb-sub">Draw together · the whole room sees it live</span></div>
           <div class="dd-tools">
             <input type="color" id="ddColor" value="#7c3aed" title="Colour" aria-label="Brush colour">
-            <button class="dd-btn" id="ddEraseBtn" onclick="ddToggleErase()" title="Eraser">🩹 Eraser</button>
-            <button class="dd-btn" onclick="ddClear()" title="Wipe the canvas for everyone">🧹 Clear</button>
+            <button class="dd-btn" id="ddEraseBtn" onclick="ddToggleErase()" title="Eraser" aria-pressed="false">🩹 Eraser</button>
+            <button class="dd-btn" onclick="ddClear()" title="Wipe the canvas for everyone" aria-label="Clear canvas for everyone">🧹 Clear</button>
           </div>
         </div>
-        <canvas id="ddCanvas" width="1000" height="460"></canvas>
+        <canvas id="ddCanvas" width="1000" height="460" role="img" aria-label="Collaborative drawing canvas"></canvas>
       </div>
     </div>
 
-    <footer>
-      <button class="fullscreen-link" onclick="toggleFullscreen()">⛶ Go fullscreen</button>
-      <p>The BatCave · live on <a href="https://www.hybridirc.com/" target="_blank" rel="noopener">HybridIRC</a></p>
+    <footer role="contentinfo">
+      <button class="fullscreen-link" onclick="toggleFullscreen()" aria-label="Toggle fullscreen mode">⛶ Go fullscreen</button>
+      <p>The BatCave · live on <a href="https://www.hybridirc.com/" target="_blank" rel="noopener noreferrer">HybridIRC</a></p>
     </footer>
+    
+    <!-- Bot Status Indicator -->
+    <div id="botStatus" class="bot-status disconnected" style="display:none;" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="botStatusText">Bot offline</span>
+    </div>
   </div>
+  <!-- Skip link styles -->
+  <style>
+    .skip-link:focus{position:static!important;width:auto;height:auto;padding:12px 24px;background:var(--violet-deep);color:#fff;z-index:9999;text-decoration:none;border-radius:8px;left:50%!important;transform:translateX(-50%);box-shadow:0 4px 20px rgba(0,0,0,.5)}
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce){
+      body{animation:none!important;background-attachment:scroll!important}
+      .bat{animation:none!important}
+      .dot{animation:none!important}
+    }
+    /* Focus visible for keyboard navigation */
+    :focus-visible{outline:3px solid var(--violet);outline-offset:2px;border-radius:4px}
+    button:focus-visible,input:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+    /* Bot status indicator */
+    .bot-status{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(10,8,18,.9);border:1px solid var(--line);border-radius:10px;font-size:.75rem;color:var(--muted);backdrop-filter:blur(8px)}
+    .bot-status.connected{color:#22c55e;border-color:#22c55e33}
+    .bot-status.disconnected{color:#ef4444;border-color:#ef444433}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 2s ease-in-out infinite}
+    .bot-status.connected .status-dot{background:#22c55e}
+    .bot-status.disconnected .status-dot{background:#ef4444}
+    /* Bot messages in chat */
+    .bot-message{background:rgba(167,139,250,.08);border-left:3px solid var(--violet);padding:8px 12px;margin:4px 0;border-radius:0 8px 8px 0}
+  </style>
+  <!-- YouTube IFrame API (deferred loading) -->
+  <script>
+    // Load YouTube API only when user interacts with radio
+    var ytApiLoaded=false;
+    function loadYouTubeAPI(){
+      if(ytApiLoaded) return;
+      ytApiLoaded=true;
+      var s=document.createElement('script');
+      s.src='https://www.youtube.com/iframe_api';
+      s.async=true;
+      document.body.appendChild(s);
+    }
+  </script>
   <!-- Firebase (compat) — powers the synced jukebox. Config is public by design. -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -267,7 +330,18 @@
     var ytPlayer=null, ytReady=false, tuned=false, curVid=null, curNP=null, lastSeek=0, lastSeekVid=null;
     window.onYouTubeIframeAPIReady = function(){ ytReady=true; if(tuned && !ytPlayer) makePlayer(); };
 
-    function jbToggle(){ tuned ? jbLeave() : jbJoinRadio(); }
+    function jbToggle(){ 
+      if(!tuned){ 
+        loadYouTubeAPI(); // Load YouTube API on first interaction
+        // Update button state for accessibility
+        var b=document.getElementById('jbJoin');
+        if(b) b.setAttribute('aria-pressed', 'true');
+      } else {
+        var b=document.getElementById('jbJoin');
+        if(b) b.setAttribute('aria-pressed', 'false');
+      }
+      tuned ? jbLeave() : jbJoinRadio(); 
+    }
     function jbJoinRadio(){
       tuned = true;
       document.getElementById('jukeboxEl').classList.add('tuned');
@@ -449,11 +523,69 @@
       });
       window.addEventListener('pointerup', function(){ if(drawing && pushPt && last){ strokesRef.push(seg(pushPt,last)); } drawing=false; last=pushPt=null; });
 
-      window.ddToggleErase=function(){ erasing=!erasing; var b=document.getElementById('ddEraseBtn'); if(b) b.classList.toggle('on',erasing); };
+      window.ddToggleErase=function(){ 
+        erasing=!erasing; 
+        var b=document.getElementById('ddEraseBtn'); 
+        if(b) {
+          b.classList.toggle('on',erasing);
+          b.setAttribute('aria-pressed', erasing ? 'true' : 'false');
+        }
+      };
       window.ddClear=function(){ strokesRef.remove(); clearRef.set(Date.now()); ctx.clearRect(0,0,W,H); };
     })();
   </script>
-  <!-- YouTube IFrame API (calls window.onYouTubeIframeAPIReady when loaded) -->
-  <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- BatCave Bot WebSocket Integration -->
+  <script>
+    (function(){
+      var botConnected=false,ws=null,reconnectAttempts=0,maxReconnectAttempts=5,reconnectDelay=3000;
+      var botStatusEl=document.getElementById('botStatus'),botStatusTextEl=document.getElementById('botStatusText');
+      function showBotStatus(){if(botStatusEl)botStatusEl.style.display='flex';}
+      function updateBotStatus(connected,message){
+        botConnected=connected;if(!botStatusEl)return;
+        botStatusEl.className='bot-status '+(connected?'connected':'disconnected');
+        botStatusTextEl.textContent=message||(connected?'Bot online 🦇':'Bot offline');showBotStatus();
+      }
+      function connectToBot(){
+        var wsUrl=window.location.protocol==='https:'?'wss://'+window.location.host:'ws://localhost:3000';
+        try{
+          ws=new WebSocket(wsUrl);
+          ws.onopen=function(){console.log('[BatCave Bot] Connected');reconnectAttempts=0;updateBotStatus(true,'Bot online 🦇');};
+          ws.onmessage=function(e){try{var d=JSON.parse(e.data);handleBotMessage(d);}catch(err){console.error('[BatCave Bot] Parse error:',err);}};
+          ws.onclose=function(){console.log('[BatCave Bot] Disconnected');updateBotStatus(false,'Bot offline');attemptReconnect();};
+          ws.onerror=function(err){console.error('[BatCave Bot] Error:',err);updateBotStatus(false,'Connection error');};
+        }catch(e){console.log('[BatCave Bot] Could not connect:',e.message);updateBotStatus(false,'Bot unavailable');}
+      }
+      function handleBotMessage(data){
+        console.log('[BatCave Bot] Received:',data.type,data);
+        switch(data.type){
+          case'init':updateBotStatus(data.connected,data.connected?'Bot online 🦇':'Bot offline');break;
+          case'join':showNotification('🦇 '+data.nick+' joined the coven','info');break;
+          case'part':case'quit':showNotification(data.nick+' left','info');break;
+          case'command_response':if(data.response&&Array.isArray(data.response))data.response.forEach(function(l){showBotMessage(l);});break;
+          case'radio_update':showNotification('📻 Radio: '+data.status,'info');break;
+          case'error':showNotification('⚠️ '+data.error,'error');break;
+        }
+      }
+      function showNotification(message,type){
+        var notif=document.getElementById('botNotification');
+        if(!notif){notif=document.createElement('div');notif.id='botNotification';
+          notif.style.cssText='position:fixed;bottom:80px;right:20px;z-index:1001;max-width:300px;padding:12px 16px;background:rgba(10,8,18,.95);border:1px solid var(--line);border-radius:10px;font-size:.8rem;color:var(--ink);backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,.4);animation:slideIn .3s ease-out';
+          document.body.appendChild(notif);
+          var style=document.createElement('style');style.textContent='@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}';
+          document.head.appendChild(style);}
+        notif.textContent=message;notif.style.borderColor=type==='error'?'#ef444433':'var(--line)';
+        clearTimeout(notif.timeout);notif.timeout=setTimeout(function(){notif.style.animation='slideOut .3s ease-out forwards';setTimeout(function(){notif.style.display='none';},300);},5000);
+      }
+      function showBotMessage(m){console.log('[BatCave Bot]',m);}
+      function attemptReconnect(){
+        if(reconnectAttempts>=maxReconnectAttempts){console.log('[BatCave Bot] Max reconnects reached');updateBotStatus(false,'Bot unavailable');return;}
+        reconnectAttempts++;var delay=reconnectDelay*Math.pow(2,reconnectAttempts-1);
+        console.log('[BatCave Bot] Reconnecting in '+(delay/1000)+'s (attempt '+reconnectAttempts+')');setTimeout(connectToBot,delay);
+      }
+      window.sendBotCommand=function(cmd,args,channel){if(ws&&ws.readyState===WebSocket.OPEN){ws.send(JSON.stringify({type:'command',cmd:cmd,args:args,channel:channel}));return true;}return false;};
+      window.sendBotMessage=function(message,channel){if(ws&&ws.readyState===WebSocket.OPEN){ws.send(JSON.stringify({type:'say',message:message,channel:channel}));return true;}return false;};
+      if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',connectToBot);}else{connectToBot();}
+    })();
+  </script>
 </body>
 </html>

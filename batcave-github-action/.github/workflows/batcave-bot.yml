@@ -1,0 +1,41 @@
+name: BatCave Bot Runner
+
+on:
+  # Run every 5 minutes to ensure rapid restart after 6-hour timeout
+  schedule:
+    - cron: '*/5 * * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+  # Run on push to main (for testing)
+  push:
+    branches: [ main ]
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        working-directory: ./batcave-bot
+        run: npm ci
+
+      - name: Run Bot
+        working-directory: ./batcave-bot
+        env:
+          IRC_SERVER: ${{ secrets.IRC_SERVER }}
+          IRC_PORT: ${{ secrets.IRC_PORT }}
+          IRC_NICK: ${{ secrets.IRC_NICK }}
+          IRC_REALNAME: ${{ secrets.IRC_REALNAME }}
+          NICKSERV_PASS: ${{ secrets.NICKSERV_PASS }}
+          IRC_CHANNEL: ${{ secrets.IRC_CHANNEL }}
+          OWNERS: ${{ secrets.OWNERS }}
+          ADMINS: ${{ secrets.ADMINS }}
+        run: npm start

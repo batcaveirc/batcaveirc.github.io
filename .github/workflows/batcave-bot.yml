@@ -1,0 +1,63 @@
+# BatCave Vampire Bot - GitHub Actions Edition
+
+name: BatCave Bot
+
+on:
+  # Run on push to main branch
+  push:
+    branches: [main]
+  
+  # Schedule runs every 5 minutes to ensure quick restart after 6-hour timeout
+  schedule:
+    - cron: '*/5 * * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+# Cancel overlapping runs to prevent multiple bot instances
+concurrency:
+  group: batcave-bot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hours max
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: batcave-bot/package.actions.json
+      
+      - name: Install dependencies
+        working-directory: ./batcave-bot
+        run: npm ci --package-lock-only || npm install --package-lock-only
+      
+      - name: Start BatCave Bot
+        working-directory: ./batcave-bot
+        env:
+          IRC_SERVER: ${{ secrets.IRC_SERVER }}
+          IRC_PORT: ${{ secrets.IRC_PORT }}
+          IRC_NICK: ${{ secrets.IRC_NICK }}
+          IRC_REALNAME: ${{ secrets.IRC_REALNAME }}
+          IRC_CHANNEL: ${{ secrets.IRC_CHANNEL }}
+          NICKSERV_PASS: ${{ secrets.NICKSERV_PASS }}
+          NICKSERV_ACCOUNT: ${{ secrets.NICKSERV_ACCOUNT }}
+          NICKSERV_GHOST_ON_CONNECT: ${{ secrets.NICKSERV_GHOST_ON_CONNECT }}
+          OWNERS: ${{ secrets.OWNERS }}
+          ADMINS: ${{ secrets.ADMINS }}
+        run: |
+          echo "🦇 Starting BatCave Vampire Bot..."
+          echo "Server: $IRC_SERVER"
+          echo "Nick: $IRC_NICK"
+          echo "Channel: $IRC_CHANNEL"
+          echo "Owners configured: $OWNERS"
+          echo "Admins configured: $ADMINS"
+          echo ""
+          node action-bot.js
