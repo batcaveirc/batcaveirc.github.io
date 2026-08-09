@@ -245,8 +245,6 @@
       messagingSenderId: "358240419863",
       appId: "1:358240419863:web:53594b8b0a6fc684df5c52"
     };
-    // Default rotation (New Bollywood) — played when the shared queue is empty.
-    var DEFAULTS = ["qkeyLIfEAbc","g9Llg0avxGE","Ta1K02oqPoM","JJ41rt22Df8","M-Ob3hsGfCE"];
 
     function jbEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
     function jbMsg(t){ var m=document.getElementById('jbMsg'); if(m) m.textContent=t||''; }
@@ -306,48 +304,49 @@
       updateNowLabel();
       if(tuned && ytPlayer) syncNow(np);
     }
-    // Distinguish "the room's station is on" (no audio for you) from "you're actually listening".
+    // Status line: tells playing-for-you from room-playing from the quiet/idle state.
     function updateNowLabel(){
       var el=document.getElementById('jbNow'); if(!el) return;
-      var np=curNP;
-      if(np && np.title){
-        var by = (np.addedBy && np.addedBy!=='radio') ? ' <span style="color:#9b93b8">· added by '+jbEsc(np.addedBy)+'</span>' : '';
-        if(tuned){ el.innerHTML = '🎶 <b>Now playing:</b> ' + jbEsc(np.title) + by; }
-        else { el.innerHTML = '📻 <b>The room is playing:</b> ' + jbEsc(np.title) + ' — tap <b>▶ Tune in</b> to listen'; }
-      } else if(np){
-        el.innerHTML = tuned ? '🎶 <b>Now playing</b>' : "📻 <b>The room's radio is on</b> — tap ▶ Tune in to listen";
+      var titleEsc=jbEsc(curNP?curNP.title:''), addedByEsc=jbEsc(curNP?curNP.addedBy:'');
+      if(curNP && curNP.title && tuned){
+        el.innerHTML = '🎶 <b>Now playing:</b> ' + titleEsc;
+        if(curNP.addedBy && curNP.addedBy!=='radio'){ el.innerHTML += ' <span style="color:#9b93b8">· added by ' + addedByEsc + '</span>'; }
+      } else if(curNP && curNP.title && !tuned){
+        el.innerHTML = '📻 <b>The room is playing:</b> ' + titleEsc + ' — tap <b>▶ Tune in</b> to listen';
+      } else if(curNP && !curNP.title && tuned){
+        el.innerHTML = '🎶 <b>Now playing</b>';
+      } else if(curNP && !curNP.title && !tuned){
+        el.innerHTML = "📻 <b>The room's radio is on</b> — tap ▶ Tune in to listen";
+      } else if(!curNP && tuned){
+        el.innerHTML = "🔇 <b>You're tuned in</b> — search or paste a song above to start the radio.";
       } else {
-        el.textContent = "Radio's off — tune in to hear what the room's playing right now.";
+        el.textContent = "Radio's quiet — add a song above to get it going.";
       }
     }
     function syncNow(np){
       if(!ytPlayer) return;
-      if(!np || !np.videoId){ ensurePlaying(); return; }
+      if(!np || !np.videoId){ try{ ytPlayer.stopVideo(); }catch(e){} return; }
       var seek = Math.max(0, (srvNow() - (np.startedAt||srvNow()))/1000);
       lastSeek = seek; lastSeekVid = np.videoId;
       try{ ytPlayer.loadVideoById({ videoId: np.videoId, startSeconds: seek }); }catch(e){}
     }
     function ensurePlaying(){
-      if(!nowRef) return;
-      nowRef.transaction(function(cur){
-        if(cur && cur.videoId) return; // already playing — don't disturb
-        var v = DEFAULTS[Math.floor(Math.random()*DEFAULTS.length)];
-        return { videoId:v, title:'New Bollywood mix', startedAt:srvNow(), addedBy:'radio' };
-      });
+      // Queue-driven: start the next queued song only if the station is idle.
+      // No default rotation — an empty queue means the radio stays silent.
+      if(tuned && (!curNP || !curNP.videoId)) advance(null);
     }
     function advance(endedVid){
       if(!queueRef || !nowRef) return;
       queueRef.orderByChild('addedAt').limitToFirst(1).once('value').then(function(qs){
         var item=null, key=null; qs.forEach(function(c){ item=c.val(); key=c.key; });
-        var next = item ? { videoId:item.videoId, title:item.title||'', addedBy:item.addedBy||'radio' } : null;
-        if(!next){
-          var pool = DEFAULTS.filter(function(v){ return v!==endedVid; }); if(!pool.length) pool=DEFAULTS;
-          next = { videoId: pool[Math.floor(Math.random()*pool.length)], title:'New Bollywood mix', addedBy:'radio' };
-        }
         nowRef.transaction(function(cur){
-          if(cur && cur.videoId && cur.videoId!==endedVid) return; // someone already advanced — abort
-          return { videoId:next.videoId, title:next.title, startedAt:srvNow(), addedBy:next.addedBy };
-        }, function(err, committed){ if(committed && key){ queueRef.child(key).remove(); } });
+          if(cur && cur.videoId && cur.videoId!==endedVid) return; // someone already moved on — abort
+          if(!item) return null;                                   // nothing queued → stop the station (go silent)
+          return { videoId:item.videoId, title:item.title||'', startedAt:srvNow(), addedBy:item.addedBy||'radio' };
+        }, function(err, committed, snap){
+          var val = snap && snap.val();
+          if(committed && key && item && val && val.videoId===item.videoId){ queueRef.child(key).remove(); }
+        });
       });
     }
     var YT_KEY='AIzaSyBEKnvdYS3_TLOet5qh0MmrdBMvwkVjHcA';
@@ -408,10 +407,12 @@
     function renderQueue(qs){
       var list=document.getElementById('jbQueue'); if(!list) return;
       var items=[]; qs.forEach(function(c){ items.push(c.val()); });
-      if(!items.length){ list.innerHTML='<div class="jb-empty">Queue\'s empty — the station rolls through New Bollywood on its own. Paste a YouTube link above to add a song <b>everyone</b> hears next.</div>'; return; }
-      list.innerHTML='<div class="jb-qhead">Up next · '+items.length+'</div>'+items.map(function(it){
+      if(!items.length){ list.innerHTML='<div class="jb-empty">Queue\'s empty — the radio goes quiet when nothing\'s lined up. Paste a YouTube link or search above to add a song <b>everyone</b> hears next.</div>'; }
+      else { list.innerHTML='<div class="jb-qhead">Up next · '+items.length+'</div>'+items.map(function(it){
         return '<div class="jb-qrow"><span class="jb-qt">'+jbEsc(it.title)+'</span><span class="jb-qby">'+jbEsc(it.addedBy||'')+'</span></div>';
-      }).join('');
+      }).join(''); }
+      // Tuned in and the station's idle? A newly-added song starts immediately.
+      if(tuned && (!curNP || !curNP.videoId) && items.length){ advance(null); }
     }
 
     // ── Coven Canvas — real-time co-op doodle (Firebase RTDB) ────────────────
