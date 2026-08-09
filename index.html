@@ -272,12 +272,14 @@
       var b=document.getElementById('jbJoin'); b.textContent='⏸ Leave'; b.classList.add('on');
       if(ytReady && !ytPlayer) makePlayer(); else if(ytPlayer) syncNow(curNP);
       ensurePlaying();
+      updateNowLabel();
     }
     function jbLeave(){
       tuned = false;
       document.getElementById('jukeboxEl').classList.remove('tuned');
       var b=document.getElementById('jbJoin'); b.textContent='▶ Tune in'; b.classList.remove('on');
       if(ytPlayer){ try{ ytPlayer.stopVideo(); }catch(e){} }
+      updateNowLabel();
     }
     function makePlayer(){
       ytPlayer = new YT.Player('jbPlayer', {
@@ -299,13 +301,22 @@
 
     function onNowChange(np){
       curNP = np; curVid = (np && np.videoId) ? np.videoId : null;
-      var el=document.getElementById('jbNow');
-      if(np && np.title){
-        el.innerHTML = '🎶 <b>Now playing:</b> ' + jbEsc(np.title) +
-          ((np.addedBy && np.addedBy!=='radio') ? ' <span style="color:#9b93b8">· added by '+jbEsc(np.addedBy)+'</span>' : '');
-      } else if(np){ el.innerHTML='🎶 <b>Now playing</b>'; }
-      else { el.textContent = "Radio's off for you — tune in to hear what the room's playing right now."; }
+      updateNowLabel();
       if(tuned && ytPlayer) syncNow(np);
+    }
+    // Distinguish "the room's station is on" (no audio for you) from "you're actually listening".
+    function updateNowLabel(){
+      var el=document.getElementById('jbNow'); if(!el) return;
+      var np=curNP;
+      if(np && np.title){
+        var by = (np.addedBy && np.addedBy!=='radio') ? ' <span style="color:#9b93b8">· added by '+jbEsc(np.addedBy)+'</span>' : '';
+        if(tuned){ el.innerHTML = '🎶 <b>Now playing:</b> ' + jbEsc(np.title) + by; }
+        else { el.innerHTML = '📻 <b>The room is playing:</b> ' + jbEsc(np.title) + ' — tap <b>▶ Tune in</b> to listen'; }
+      } else if(np){
+        el.innerHTML = tuned ? '🎶 <b>Now playing</b>' : "📻 <b>The room's radio is on</b> — tap ▶ Tune in to listen";
+      } else {
+        el.textContent = "Radio's off — tune in to hear what the room's playing right now.";
+      }
     }
     function syncNow(np){
       if(!ytPlayer) return;
