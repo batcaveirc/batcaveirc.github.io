@@ -20,32 +20,25 @@
   body{
     min-height:100vh; color:var(--ink);
     font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    background:linear-gradient(-45deg,#10052a,#34114f,#1a0836,#4a1d6e,#0e1f45,#2b0b3f);
-    background-size:420% 420%;
-    background-attachment:fixed;
-    animation:aurora 30s ease-in-out infinite;
+    background:#07060d;
     overflow-x:hidden;
   }
-  @keyframes aurora{ 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-  body::before{ content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  /* ── Backdrop ─────────────────────────────────────────────────────────
+     A 2 KB, 56px-wide copy of the artwork stretched to fill the screen: the
+     upscale IS the blur, so it reads as ambient firelight rather than a second
+     copy of the picture. Deliberately NOT a CSS filter — a full-screen
+     blur() on a fixed layer is expensive on phones and composites badly. */
+  .bg-art{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:#07060d url('assets/batcave-blur.jpg') center/cover no-repeat;
+    opacity:.55}
+  .bg-scrim{position:fixed;inset:0;z-index:0;pointer-events:none;
     background:
-      radial-gradient(1100px 520px at 50% -8%, rgba(167,139,250,.22), transparent 60%),
-      radial-gradient(820px 460px at 88% 14%, rgba(236,72,153,.13), transparent 55%),
-      radial-gradient(760px 520px at 8% 82%, rgba(56,189,248,.10), transparent 62%); }
-  /* drifting bats */
-  .bat{position:fixed;top:-40px;font-size:26px;opacity:.10;pointer-events:none;
-       animation:fall linear infinite;filter:drop-shadow(0 0 6px rgba(0,0,0,.6));z-index:0}
-  @keyframes fall{0%{transform:translateY(-10vh) rotate(-8deg)}100%{transform:translateY(115vh) rotate(8deg)}}
+      linear-gradient(180deg, rgba(7,6,13,.62), rgba(7,6,13,.74) 55%, rgba(7,6,13,.9)),
+      radial-gradient(1200px 620px at 50% 6%, rgba(255,138,42,.14), transparent 62%);}
 
   .wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:12px 20px 56px;display:flex;flex-direction:column}
 
   header{text-align:center;order:3;margin:40px 0 6px}
-  .crest{font-size:52px;line-height:1;filter:drop-shadow(0 0 18px rgba(167,139,250,.55))}
-  h1{font-family:'Cinzel Decorative','Cinzel',Georgia,serif;font-weight:900;letter-spacing:.08em;
-     font-size:clamp(2.1rem,6vw,3.6rem);margin:.28em 0 .12em;
-     background:linear-gradient(180deg,#fff, var(--violet) 65%, var(--violet-deep));
-     -webkit-background-clip:text;background-clip:text;color:transparent;
-     text-shadow:0 0 40px rgba(124,58,237,.35)}
   .tagline{color:var(--muted);font-size:clamp(.9rem,2.4vw,1.08rem);letter-spacing:.03em;margin:0 auto;max-width:620px}
   .tagline .accent{color:var(--crimson-glow);font-weight:600}
 
@@ -80,10 +73,6 @@
   footer{text-align:center;order:4;margin-top:34px;color:var(--muted);font-size:.82rem}
   footer a{color:var(--violet);text-decoration:none;border-bottom:1px dotted var(--line)}
   footer a:hover{color:#fff}
-  .fullscreen-link{display:inline-block;margin-top:14px;padding:9px 18px;border-radius:10px;
-    background:linear-gradient(180deg,var(--violet-deep),#5b21b6);color:#fff;font-weight:600;
-    text-decoration:none;letter-spacing:.03em;box-shadow:0 8px 24px rgba(124,58,237,.35);border:0;cursor:pointer;font-size:.95rem;font-family:inherit}
-  .fullscreen-link:hover{filter:brightness(1.12)}
   /* rooms hint + radio dock */
   .dock{display:grid;grid-template-columns:1fr;gap:16px;margin-top:18px;order:2}
   .dock-item{background:linear-gradient(160deg, rgba(30,15,56,.66), rgba(10,8,18,.66));
@@ -144,23 +133,87 @@
     header{ padding:24px 16px 0; margin:0; }
     footer{ padding:0 16px; margin-top:26px; }
   }
+
+  /* Coven Canvas opens/closes like the radio's Tune in button */
+  .dd-body{display:none;margin-top:12px}
+  .doodle.open .dd-body{display:block}
+  .doodle.open #ddCanvas{margin-top:12px}
+
+  /* ── Welcome art hero ─────────────────────────────────────────────────── */
+  .hero{order:3;margin:40px 0 6px;text-align:center}
+  .hero-art{position:relative;width:100%;aspect-ratio:1928/1074;overflow:hidden;
+    border-radius:18px;border:1px solid var(--line);
+    background:#07060d url('assets/batcave-poster.jpg') center/cover no-repeat;
+    box-shadow:0 24px 70px rgba(0,0,0,.6), 0 0 60px rgba(255,138,42,.16)}
+  .hero-art video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    opacity:0;transition:opacity 1.2s ease}
+  .hero-art video.on{opacity:1}
+  .hero .tagline{margin-top:20px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* ── Bat burst ────────────────────────────────────────────────────────
+     Tapping the welcome art sends bats up across the whole screen. The sky
+     layer is fixed and click-through so it never blocks the chat. */
+  .hero-art{cursor:pointer;-webkit-tap-highlight-color:transparent;
+            transition:transform .12s ease, box-shadow .25s ease}
+  .hero-art:active{transform:scale(.994)}
+  .hero-art:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
+  .hero-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+    background:rgba(7,6,13,.62);border:1px solid var(--line);color:var(--ink);
+    font-size:.76rem;letter-spacing:.04em;padding:5px 13px;border-radius:999px;
+    backdrop-filter:blur(3px);pointer-events:none;
+    animation:hintPulse 2.6s ease-in-out infinite;transition:opacity .5s ease}
+  .hero-hint.gone{opacity:0}
+  @keyframes hintPulse{0%,100%{opacity:.65}50%{opacity:1}}
+
+  .bat-sky{position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+  .bat-fly{position:absolute;will-change:transform,opacity;
+    animation:batUp var(--dur) cubic-bezier(.22,.61,.36,1) forwards}
+  /* 🦇 is a dark glyph on a dark page — without a glow the swarm is invisible.
+     The violet halo also ties the bats to the site's accent colour. */
+  .bat-fly i{display:block;font-style:normal;
+    filter:drop-shadow(0 0 7px rgba(167,139,250,.95))
+           drop-shadow(0 0 16px rgba(124,58,237,.55));
+    animation:batFlap .26s ease-in-out infinite}
+  @keyframes batUp{
+    0%{transform:translate3d(0,0,0) rotate(0deg);opacity:0}
+    10%{opacity:1}
+    85%{opacity:1}
+    100%{transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot));opacity:0}}
+  /* squash horizontally = wing flap, cheap and reads well at small sizes */
+  @keyframes batFlap{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.5)}}
+  @media(prefers-reduced-motion:reduce){
+    .hero-hint{animation:none}
+    .bat-fly,.bat-fly i{animation-duration:.01ms!important;animation-iteration-count:1!important}
+  }
 </style>
 </head>
 <body>
-  <!-- drifting bats (decorative) -->
-  <div class="bat" style="left:8%;animation-duration:19s;animation-delay:-2s">🦇</div>
-  <div class="bat" style="left:24%;animation-duration:26s;animation-delay:-9s;font-size:20px">🦇</div>
-  <div class="bat" style="left:52%;animation-duration:22s;animation-delay:-5s">🦇</div>
-  <div class="bat" style="left:71%;animation-duration:30s;animation-delay:-14s;font-size:32px">🦇</div>
-  <div class="bat" style="left:88%;animation-duration:24s;animation-delay:-7s;font-size:18px">🦇</div>
+  <!-- Welcome art. Poster paints immediately; the video is attached by script
+       only on wide screens and never when the visitor asked to save data or
+       reduce motion. -->
+  <div class="bg-art" aria-hidden="true"></div>
+  <div class="bg-scrim" aria-hidden="true"></div>
+  <div class="bat-sky" id="batSky" aria-hidden="true"></div>
 
   <div class="wrap">
-    <header>
-      <div class="crest">🦇</div>
+    <header class="hero">
+      <!-- Welcome art. Shows the poster instantly; the video is attached by
+           script only on wide screens (see mountHeroVideo). The artwork already
+           carries the "BatCave" wordmark, so the <h1> is for screen readers and
+           search engines rather than a second title painted over it. -->
+      <div class="hero-art" id="heroArt" role="button" tabindex="0"
+           aria-label="The BatCave welcome artwork — activate to release the bats"
+           onclick="batBurst(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();batBurst(event);}">
+        <span class="hero-hint" id="heroHint">🦇 tap the cave</span>
+      </div>
       <!-- EDIT ME: your room name -->
-      <h1>The&nbsp;BatCave</h1>
+      <h1 class="sr-only">The&nbsp;BatCave</h1>
       <!-- EDIT ME: your tagline -->
-      <p class="tagline">Where the night owls gather. Pick a name, drop in, and <span class="accent">join the coven</span> — no account, no download.</p>
+      <p class="tagline">The lights are on and someone's always talking. Take a name,
+        pull up a chair, and <span class="accent">make yourself at home</span> —
+        no sign-up, nothing to install.</p>
     </header>
 
     <!-- ── LIVE CHAT EMBED (HybridIRC / KiwiIRC) ─────────────────────────────
@@ -205,18 +258,20 @@
       <div class="dock-item doodle" id="doodleBox">
         <div class="jb-head">
           <div class="jb-title">🎨 Coven Canvas<span class="jb-sub">Draw together · the whole room sees it live</span></div>
+          <button class="jb-join" id="ddJoin" onclick="ddToggle()">✏️ Open canvas</button>
+        </div>
+        <div class="dd-body" id="ddBody">
           <div class="dd-tools">
             <input type="color" id="ddColor" value="#7c3aed" title="Colour" aria-label="Brush colour">
             <button class="dd-btn" id="ddEraseBtn" onclick="ddToggleErase()" title="Eraser">🩹 Eraser</button>
             <button class="dd-btn" onclick="ddClear()" title="Wipe the canvas for everyone">🧹 Clear</button>
           </div>
+          <canvas id="ddCanvas" width="1000" height="460"></canvas>
         </div>
-        <canvas id="ddCanvas" width="1000" height="460"></canvas>
       </div>
     </div>
 
     <footer>
-      <button class="fullscreen-link" onclick="toggleFullscreen()">⛶ Go fullscreen</button>
       <p>The BatCave · live on <a href="https://www.hybridirc.com/" target="_blank" rel="noopener">HybridIRC</a></p>
     </footer>
   </div>
@@ -224,6 +279,69 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
   <script>
+
+    /* Canvas open/close — mirrors the radio's Tune in toggle. Collapsed by
+       default so the page opens quiet; nothing loads until it's opened. */
+    function ddToggle(){
+      var box=document.getElementById('doodleBox');
+      var btn=document.getElementById('ddJoin');
+      if(!box||!btn) return;
+      var open=box.classList.toggle('open');
+      btn.textContent = open ? '✕ Close canvas' : '✏️ Open canvas';
+      btn.classList.toggle('on', open);
+    }
+
+    /* Bat burst — tap the welcome art and the colony scatters upward.
+       Bats spawn at the pointer, fan out across the viewport and remove
+       themselves when their animation ends, so nothing accumulates. */
+    var BAT_CAP = 70;                      // hard ceiling on live bats
+    function batBurst(ev){
+      var sky = document.getElementById('batSky');
+      var hero = document.getElementById('heroArt');
+      if(!sky || !hero) return;
+
+      var hint = document.getElementById('heroHint');
+      if(hint && !hint.classList.contains('gone')){
+        hint.classList.add('gone');
+        setTimeout(function(){ if(hint.parentNode) hint.remove(); }, 600);
+      }
+
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if(sky.childElementCount > BAT_CAP) return;   // spam guard
+
+      // Spawn where they touched; fall back to the middle of the art.
+      var r = hero.getBoundingClientRect();
+      var ox = (ev && ev.clientX) ? ev.clientX : r.left + r.width/2;
+      var oy = (ev && ev.clientY) ? ev.clientY : r.top + r.height/2;
+
+      var n = 16 + Math.floor(Math.random()*7);
+      for(var i=0;i<n;i++){
+        var b = document.createElement('div');
+        b.className = 'bat-fly';
+        b.style.left = ox + 'px';
+        b.style.top  = oy + 'px';
+        b.style.fontSize = (14 + Math.random()*26) + 'px';
+        // fan out sideways, always exit past the top of the screen
+        b.style.setProperty('--dx', ((Math.random()*2-1) * innerWidth * 0.55).toFixed(0) + 'px');
+        b.style.setProperty('--dy', (-(oy + 140 + Math.random()*320)).toFixed(0) + 'px');
+        b.style.setProperty('--rot', (Math.random()*70-35).toFixed(0) + 'deg');
+        var dur = 1.7 + Math.random()*1.7;
+        var delay = Math.random()*0.32;
+        b.style.setProperty('--dur', dur.toFixed(2) + 's');
+        b.style.animationDelay = delay.toFixed(2) + 's';
+        var wing = document.createElement('i');
+        wing.textContent = '\uD83E\uDD87';
+        wing.style.animationDelay = (Math.random()*0.26).toFixed(2) + 's';
+        b.appendChild(wing);
+        b.addEventListener('animationend', function(){ this.remove(); }, {once:true});
+        // Belt and braces: browsers freeze animations in a backgrounded tab, so
+        // animationend may never fire and bats would pile up. Sweep them anyway.
+        (function(el, ms){ setTimeout(function(){ if(el.parentNode) el.remove(); }, ms); })
+          (b, (dur + delay) * 1000 + 800);
+        sky.appendChild(b);
+      }
+    }
+
     function toggleFullscreen(){
       var el=document.getElementById('chatStage');
       var fsEl=document.fullscreenElement||document.webkitFullscreenElement;
@@ -248,7 +366,14 @@
 
     function jbEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
     function jbMsg(t){ var m=document.getElementById('jbMsg'); if(m) m.textContent=t||''; }
-    function jbNick(){ try{ var n=localStorage.getItem('bc_nick'); if(!n){ n='bat'+Math.floor(Math.random()*9000+1000); localStorage.setItem('bc_nick',n);} return n; }catch(e){ return 'someone'; } }
+    /* Anonymous label for "added by" on jukebox songs. Kept in memory ONLY —
+       nothing about a visitor is written to their browser or persisted between
+       visits. (The IRC chat is a separate site in the iframe and keeps its own
+       state; this page cannot read or clear that.) */
+    var _jbLabel = 'bat' + Math.floor(Math.random()*9000+1000);
+    function jbNick(){ return _jbLabel; }
+    /* Erase the label older versions of this page used to persist. */
+    try{ localStorage.removeItem('bc_nick'); }catch(e){}
 
     var nowRef=null, queueRef=null, srvOffset=0;
     try{
